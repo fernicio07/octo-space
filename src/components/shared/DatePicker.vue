@@ -83,8 +83,19 @@ export default {
     };
   },
   methods: {
-    passDate() {
-      this.menu = false;
+    passDate(startOrEnd) {
+      this.startDateMenu = false;
+      this.endDateMenu = false;
+      let result = false;
+
+      if (startOrEnd == "start") {
+        result = { status: startOrEnd, date: this.sDate };
+      } else if (startOrEnd == "end") {
+        result = { status: startOrEnd, date: this.eDate };
+      }
+
+      this.$emit("changeDate", result);
+      this.$emit("changeDateAsteroide", result);
     },
   },
 };
