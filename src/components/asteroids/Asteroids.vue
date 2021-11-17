@@ -7,14 +7,22 @@
     />
 
     <v-row class="nasa-box">
-      <Apod :todayImg="todayImg" />
+      <ApodSkeleton v-if="loadingApod" />
+      <Apod v-else :todayImg="todayImg" />
 
-      <p class="subtitle-1" v-if="totalCount != 0">
+      <p class="subtitle-1 count" v-if="totalCount != 0">
         Total Asteroids Count: <strong>{{ totalCount }}</strong>
       </p>
 
-      <v-col cols="12" sm="12" v-for="(asteroid, id) in asteroids" :key="id">
-        <v-col cols="12" sm="12" v-for="item in asteroid" :key="item.idx">
+      <AsteroidsSkeleton v-if="loadingAsteroids" />
+      <v-col
+        cols="12"
+        sm="12"
+        v-else
+        v-for="(asteroid, id) in asteroids"
+        :key="id"
+      >
+        <v-col cols="12" sm="12" v-for="item in asteroid" :key="item.id">
           <AsteroidsCard :item="item" />
         </v-col>
       </v-col>
@@ -31,6 +39,8 @@ import axios from "axios";
 import moment from "moment";
 // Components
 import Apod from "@/components/apod/Apod";
+import ApodSkeleton from "@/components/apod/ApodSkeleton";
+import AsteroidsSkeleton from "@/components/asteroids/AsteroidsSkeleton";
 import AsteroidsCard from "@/components/asteroids/AsteroidsCard";
 import DatePicker from "@/components/shared/DatePicker";
 
@@ -39,7 +49,9 @@ export default {
 
   components: {
     Apod,
+    ApodSkeleton,
     AsteroidsCard,
+    AsteroidsSkeleton,
     DatePicker,
   },
 
@@ -50,6 +62,8 @@ export default {
       asteroids: {},
       todayImg: "",
       errorMessage: "",
+      loadingApod: true,
+      loadingAsteroids: true,
       snackbarError: false,
       totalCount: 0,
     };
@@ -62,6 +76,9 @@ export default {
 
   methods: {
     async getAsteroids(event) {
+      this.loadingAsteroids = true;
+      this.totalCount = 0;
+
       if (event.status == "start") {
         this.startDate = event.date;
       } else if (event.status == "end") {
@@ -83,6 +100,7 @@ export default {
 
         this.totalCount = response.data.element_count;
         this.asteroids = response.data.near_earth_objects;
+        this.loadingAsteroids = false;
       } catch (error) {
         this.errorMessage = error;
         this.snackbarError = true;
@@ -90,6 +108,8 @@ export default {
     },
 
     async getAPOD(event) {
+      this.loadingApod = true;
+
       if (event.status == "start") {
         this.startDate = event.date;
       } else if (event.status == "end") {
@@ -111,6 +131,7 @@ export default {
 
         var index = Math.floor(Math.random() * response.data.length);
         this.todayImg = response.data[index];
+        this.loadingApod = false;
       } catch (error) {
         this.errorMessage = error;
         this.snackbarError = true;
@@ -125,5 +146,9 @@ export default {
   border: 1px solid #b8b8b8;
   border-radius: 20px;
   padding: 1rem;
+}
+
+.count {
+  margin-left: 1.5rem;
 }
 </style>
