@@ -10,9 +10,11 @@
       <ApodSkeleton v-if="loadingApod" />
       <Apod v-else :todayImg="todayImg" />
 
-      <p class="subtitle-1 count" v-if="totalCount != 0">
-        Total Asteroids Count: <strong>{{ totalCount }}</strong>
-      </p>
+      <v-col cols="12" sm="12" v-if="totalCount != 0">
+        <p class="subtitle-1 count">
+          Total Asteroids Count: <strong>{{ totalCount }}</strong>
+        </p>
+      </v-col>
 
       <AsteroidsSkeleton v-if="loadingAsteroids" />
       <v-col
@@ -66,6 +68,7 @@ export default {
       loadingAsteroids: true,
       snackbarError: false,
       totalCount: 0,
+      searchQuery: null,
     };
   },
 
