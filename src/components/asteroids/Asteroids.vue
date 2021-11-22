@@ -11,6 +11,17 @@
       <Apod v-else :todayImg="todayImg" />
 
       <v-col cols="12" sm="12" v-if="totalCount != 0">
+        <v-text-field
+          label="Search Asteroids"
+          v-model="searchQuery"
+        ></v-text-field>
+
+        <v-select
+          :items="magnitudItems"
+          v-model="selectedMagnitud"
+          label="Magnitude"
+        ></v-select>
+
         <p class="subtitle-1 count">
           Total Asteroids Count: <strong>{{ totalCount }}</strong>
         </p>
@@ -21,12 +32,10 @@
         cols="12"
         sm="12"
         v-else
-        v-for="(asteroid, id) in asteroids"
-        :key="id"
+        v-for="item in asteroidsFiltered"
+        :key="item.id"
       >
-        <v-col cols="12" sm="12" v-for="item in asteroid" :key="item.id">
-          <AsteroidsCard :item="item" />
-        </v-col>
+        <AsteroidsCard :item="item" />
       </v-col>
     </v-row>
 
@@ -68,8 +77,30 @@ export default {
       loadingAsteroids: true,
       snackbarError: false,
       totalCount: 0,
-      searchQuery: null,
+      searchQuery: "",
+      magnitudItems: "",
+      selectedMagnitud: "",
     };
+  },
+
+  computed: {
+    asteroidsFiltered() {
+      if (this.searchQuery || this.selectedMagnitud) {
+        return this.asteroids
+          .filter((item) => {
+            return this.searchQuery
+              .toLowerCase()
+              .split(" ")
+              .every((v) => item.name.toLowerCase().includes(v));
+          })
+          .filter(
+            (asteroid) => asteroid.absolute_magnitude_h >= this.selectedMagnitud
+          )
+          .sort((a, b) => a.absolute_magnitude_h < b.absolute_magnitude_h);
+      } else {
+        return this.asteroids;
+      }
+    },
   },
 
   mounted() {
@@ -103,6 +134,16 @@ export default {
 
         this.totalCount = response.data.element_count;
         this.asteroids = response.data.near_earth_objects;
+
+        this.asteroids = Object.keys(this.asteroids)
+          .map((key) => {
+            return this.asteroids[key];
+          })
+          .flat();
+        this.magnitudItems = this.asteroids.map(
+          (item) => item.absolute_magnitude_h
+        );
+
         this.loadingAsteroids = false;
       } catch (error) {
         this.errorMessage = error;
